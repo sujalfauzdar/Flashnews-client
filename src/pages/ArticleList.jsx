@@ -121,17 +121,17 @@ const ArticleList = () => {
     // Animation Variants
     const cardVariants = {
         hidden: { opacity: 0, y: 30, scale: 0.98 },
-        visible: { 
-            opacity: 1, 
-            y: 0, 
-            scale: 1, 
-            transition: { 
-                duration: 0.5, 
-                ease: 'easeOut', 
-                type: 'spring', 
-                stiffness: 100, 
-                damping: 15 
-            } 
+        visible: {
+            opacity: 1,
+            y: 0,
+            scale: 1,
+            transition: {
+                duration: 0.5,
+                ease: 'easeOut',
+                type: 'spring',
+                stiffness: 100,
+                damping: 15
+            }
         },
     };
 
@@ -270,7 +270,33 @@ const ArticleList = () => {
                             variants={cardVariants}
                             initial="hidden"
                             animate="visible"
-                        >
+                        ><div className="flex items-center gap-2 mb-2">
+                        {article.likes.length >= article.dislikes.length ? (
+                            <span className="flex items-center gap-1 text-[#00FFFF] text-xs font-semibold bg-[#0A1F44] px-2 py-1 rounded-full">
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    className="w-4 h-4"
+                                    viewBox="0 0 24 24"
+                                    fill="currentColor"
+                                >
+                                    <path d="M1 21h4V9H1v12zM23 10c0-.55-.45-1-1-1h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 2l-5 5V21h10c.55 0 1-.45 1-1v-6l1.29-1.29c.19-.18.29-.44.29-.71V10z" />
+                                </svg>
+                                {article.likes.length}
+                            </span>
+                        ) : (
+                            <span className="flex items-center gap-1 text-[#FF4500] text-xs font-semibold bg-[#0A1F44] px-2 py-1 rounded-full">
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    className="w-4 h-4"
+                                    viewBox="0 0 24 24"
+                                    fill="currentColor"
+                                >
+                                    <path d="M23 3h-4v12h4V3zM1 13c0 .55.45 1 1 1h6.31l-.95 4.57-.03.32c0 .41.17.79.44 1.06L9.83 22l5-5V3H4c-.55 0-1 .45-1 1v6l-1.29 1.29c-.19.18-.29.44-.29.71V13z" />
+                                </svg>
+                                {article.dislikes.length}
+                            </span>
+                        )}
+                    </div>
                             <h2
                                 className="text-xl font-extrabold text-[#FF4500]"
                                 style={{ fontFamily: "'Lora', sans-serif" }}
@@ -282,7 +308,7 @@ const ArticleList = () => {
                                 <img
                                     src={article.imageUrl}
                                     alt={article.title}
-                                    className="rounded-lg mt-2"
+                                    className="rounded-lg mt-2 mb-8"
                                 />
                             )}
                             <p className="text-sm text-gray-400 absolute bottom-2 right-2">
@@ -290,9 +316,9 @@ const ArticleList = () => {
                             </p>
                             <Link
                                 to={`/articles/${article._id}`}
-                                className="text-blue-500 hover:underline mt-2 inline-block"
+                                className="text-blue-500 hover:underline mt-2 inline-block absolute bottom-2 left-2"
                             >
-                                Read More
+                                Read the Full Article
                             </Link>
                         </motion.div>
                     ))

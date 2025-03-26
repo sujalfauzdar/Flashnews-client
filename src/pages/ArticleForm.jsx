@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import axios from 'axios';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 
 const ArticleForm = () => {
+    const navigate = useNavigate();
     const [article, setArticle] = useState({
         title: '',
         content: '',
@@ -92,10 +94,30 @@ const ArticleForm = () => {
     };
 
     return (
-        <div className="min-h-screen bg-[#121212] p-4 lg:p-8">
+        <div className="min-h-screen bg-[#121212] p-4 lg:p-8 relative">
+                       <button
+                onClick={() => navigate('/articles')}
+                className="absolute top-4 left-4 flex items-center hover:text-[#00FFFF] text-[#FF4500] transition-colors duration-300"
+            >
+                <svg
+                    className="w-8 h-8 mr-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                >
+                    <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M15 19l-7-7 7-7"
+                    />
+                </svg>
+                <span className="text-sm font-semibold">Read Articles</span>
+            </button> 
             <motion.form
                 onSubmit={handleSubmit}
-                className="max-w-md mx-auto p-6 bg-[#020229] rounded-lg shadow-lg shadow-[#80CBC4]/20 text-[#748AA1] 
+                className="max-w-md mx-auto p-6  rounded-lg shadow-lg shadow-[#80CBC4]/20 text-[#748AA1] 
                            sm:max-w-lg md:max-w-xl lg:max-w-6xl xl:max-w-8xl"
                 variants={formVariants}
                 initial="hidden"
