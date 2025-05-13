@@ -156,7 +156,6 @@ const AboutUs = () => {
                     </motion.div>
                 </motion.section>
 
-                {/* How to Use */}
                 <motion.section
                     className="bg-[#0A1F44] p-6 rounded-lg shadow-lg shadow-[#FF4500]/30 hover:shadow-[#FF4500]/50 transition-shadow duration-300"
                     variants={sectionRightVariants}
@@ -177,7 +176,7 @@ const AboutUs = () => {
                     </ol>
                 </motion.section>
 
-                {/* About the Developer */}
+               
                 <motion.section
                     className="bg-[#0A1F44] p-6 rounded-lg shadow-lg shadow-[#00FFFF]/30 hover:shadow-[#00FFFF]/50 transition-shadow duration-300"
                     variants={developerVariants}
@@ -192,14 +191,14 @@ const AboutUs = () => {
                 </motion.section>
             </div>
 
-            {/* Footer Note */}
+           
             <motion.div
                 className="text-center mt-12 text-gray-400 text-sm"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.5, duration: 1 }}
             >
-                Built with Hardwork by the FlashNews | Login required, just pure news vibes!
+                Built with Hardwork by the FlashNews |  just pure news vibes!
             </motion.div>
         </div>
     );

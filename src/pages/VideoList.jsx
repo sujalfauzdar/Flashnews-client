@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Link, useNavigate } from 'react-router-dom'; // Added useNavigate
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Select from 'react-select';
 
@@ -43,9 +43,9 @@ const customStyles = {
     }),
 };
 
-const ArticleList = () => {
-    const [articles, setArticles] = useState([]);
-    const [filteredArticles, setFilteredArticles] = useState([]);
+const VideoList = () => {
+    const [videos, setVideos] = useState([]);
+    const [filteredVideos, setFilteredVideos] = useState([]);
     const [states, setStates] = useState([]);
     const [cities, setCities] = useState([]);
     const [categories, setCategories] = useState([]);
@@ -56,20 +56,19 @@ const ArticleList = () => {
     const [sortOrder, setSortOrder] = useState('desc');
     const [isFilterSortOpen, setIsFilterSortOpen] = useState(false);
     const [loading, setLoading] = useState(true);
-    const navigate = useNavigate(); // For navigation to videos
 
     useEffect(() => {
         const fetchData = async () => {
             setLoading(true);
             try {
-                const [articlesRes, statesRes, citiesRes, categoriesRes] = await Promise.all([
-                    axios.get(`${import.meta.env.VITE_API_URL}/articles`),
-                    axios.get(`${import.meta.env.VITE_API_URL}/articles/states`),
-                    axios.get(`${import.meta.env.VITE_API_URL}/articles/cities`),
-                    axios.get(`${import.meta.env.VITE_API_URL}/articles/categories`),
+                const [videosRes, statesRes, citiesRes, categoriesRes] = await Promise.all([
+                    axios.get(`${import.meta.env.VITE_API_URL}/videos`),
+                    axios.get(`${import.meta.env.VITE_API_URL}/videos/states`),
+                    axios.get(`${import.meta.env.VITE_API_URL}/videos/cities`),
+                    axios.get(`${import.meta.env.VITE_API_URL}/videos/categories`),
                 ]);
-                setArticles(articlesRes.data);
-                setFilteredArticles(articlesRes.data);
+                setVideos(videosRes.data);
+                setFilteredVideos(videosRes.data);
                 setStates(statesRes.data.map(state => ({ value: state, label: state })));
                 setCities(citiesRes.data.map(city => ({ value: city, label: city })));
                 setCategories(categoriesRes.data.map(category => ({ value: category, label: category })));
@@ -83,34 +82,34 @@ const ArticleList = () => {
     }, []);
 
     useEffect(() => {
-        const filterAndSortArticles = () => {
-            let result = [...articles];
+        const filterAndSortVideos = () => {
+            let result = [...videos];
             if (searchQuery.trim()) {
-                result = result.filter(article =>
-                    article.title.toLowerCase().includes(searchQuery.toLowerCase())
+                result = result.filter(video =>
+                    video.title.toLowerCase().includes(searchQuery.toLowerCase())
                 );
             }
             if (selectedStates.length > 0) {
                 const stateValues = selectedStates.map(s => s.value);
-                result = result.filter(article => stateValues.includes(article.state));
+                result = result.filter(video => stateValues.includes(video.state));
             }
             if (selectedCities.length > 0) {
                 const cityValues = selectedCities.map(c => c.value);
-                result = result.filter(article => cityValues.includes(article.city));
+                result = result.filter(video => cityValues.includes(video.city));
             }
             if (selectedCategories.length > 0) {
                 const categoryValues = selectedCategories.map(c => c.value);
-                result = result.filter(article => categoryValues.includes(article.category));
+                result = result.filter(video => categoryValues.includes(video.category));
             }
             result.sort((a, b) => {
                 const dateA = new Date(a.publishedAt);
                 const dateB = new Date(b.publishedAt);
                 return sortOrder === 'desc' ? dateB - dateA : dateA - dateB;
             });
-            setFilteredArticles(result);
+            setFilteredVideos(result);
         };
-        filterAndSortArticles();
-    }, [selectedStates, selectedCities, selectedCategories, searchQuery, sortOrder, articles]);
+        filterAndSortVideos();
+    }, [selectedStates, selectedCities, selectedCategories, searchQuery, sortOrder, videos]);
 
     const cardVariants = {
         hidden: { opacity: 0, y: 30, scale: 0.98 },
@@ -141,17 +140,8 @@ const ArticleList = () => {
         <div className="p-4 bg-[#121212] text-[#FFFFFF]">
             {/* Toggle Buttons */}
             <div className="mb-6 flex justify-center gap-4">
-                <button
-                    className="px-4 py-2 rounded bg-[#1E40AF] text-white hover:bg-[#1E3A8A]"
-                >
-                    Articles
-                </button>
-                <button
-                    onClick={() => navigate('/videos')}
-                    className="px-4 py-2 rounded bg-[#0A1F44] text-gray-300 hover:bg-[#1E3A8A]"
-                >
-                    Videos
-                </button>
+                <Link to="/articles" className="px-4 py-2 rounded bg-[#0A1F44] text-gray-300 hover:bg-[#1E3A8A]">Articles</Link>
+                <button className="px-4 py-2 rounded bg-[#1E40AF] text-white hover:bg-[#1E3A8A]">Videos</button>
             </div>
 
             {/* Search and Filter/Sort Section */}
@@ -161,7 +151,7 @@ const ArticleList = () => {
                         type="text"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Search articles by title..."
+                        placeholder="Search videos by title..."
                         className="w-full p-2 border border-[#374151] rounded bg-[#0A1F44] text-[#FFFFFF] focus:border-[#1E40AF] focus:outline-none"
                     />
                 </div>
@@ -186,44 +176,38 @@ const ArticleList = () => {
                 </div>
             </div>
 
-            {/* Article List */}
+            {/* Video List */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filteredArticles.length > 0 ? (
-                    filteredArticles.map(article => (
+                {filteredVideos.length > 0 ? (
+                    filteredVideos.map(video => (
                         <motion.div
-                            key={article._id}
+                            key={video._id}
                             className="bg-[#1E1E1E] shadow-md rounded p-4 relative"
                             variants={cardVariants}
                             initial="hidden"
                             animate="visible"
                         >
-                            <div className="flex items-center gap-2 mb-2">
-                                {article.likes.length >= article.dislikes.length ? (
-                                    <span className="flex items-center gap-1 text-[#00FFFF] text-xs font-semibold bg-[#0A1F44] px-2 py-1 rounded-full">
-                                        <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M1 21h4V9H1v12zM23 10c0-.55-.45-1-1-1h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 2l-5 5V21h10c.55 0 1-.45 1-1v-6l1.29-1.29c.19-.18.29-.44.29-.71V10z" /></svg>
-                                        {article.likes.length}
-                                    </span>
-                                ) : (
-                                    <span className="flex items-center gap-1 text-[#FF4500] text-xs font-semibold bg-[#0A1F44] px-2 py-1 rounded-full">
-                                        <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M23 3h-4v12h4V3zM1 13c0 .55.45 1 1 1h6.31l-.95 4.57-.03.32c0 .41.17.79.44 1.06L9.83 22l5-5V3H4c-.55 0-1 .45-1 1v6l-1.29 1.29c-.19.18-.29.44-.29.71V13z" /></svg>
-                                        {article.dislikes.length}
-                                    </span>
-                                )}
-                            </div>
                             <h2 className="text-xl font-extrabold text-[#FF4500]" style={{ fontFamily: "'Lora', sans-serif" }}>
-                                {article.title}, <span className="text-md text-white font-normal"> {article.city}, {article.state}</span>
+                                {video.title}, <span className="text-md text-white font-normal"> {video.city}, {video.state}</span>
                             </h2>
-                            {article.imageUrl && <img src={article.imageUrl} alt={article.title} className="rounded-lg mt-2 mb-8" />}
-                            <p className="text-sm text-gray-400 absolute bottom-2 right-2">{new Date(article.publishedAt).toLocaleDateString()}</p>
-                            <Link to={`/articles/${article._id}`} className="text-blue-500 hover:underline mt-2 inline-block absolute bottom-2 left-2">Read the Full Article</Link>
+                            <iframe
+                                src={video.videoUrl}
+                                title={video.title}
+                                className="w-full h-48 rounded-lg mt-2 mb-8"
+                                frameBorder="0"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowFullScreen
+                            />
+                            <p className="text-sm text-gray-400 absolute bottom-2 right-2">{new Date(video.publishedAt).toLocaleDateString()}</p>
+                            <Link to={`/videos/${video._id}`} className="text-blue-500 hover:underline mt-2 inline-block absolute bottom-2 left-2">Watch Full Video</Link>
                         </motion.div>
                     ))
                 ) : (
-                    <p className="text-center col-span-full text-gray-500">No articles match your filters.</p>
+                    <p className="text-center col-span-full text-gray-500">This section under maintenance</p>
                 )}
             </div>
         </div>
     );
 };
 
-export default ArticleList;
+export default VideoList;

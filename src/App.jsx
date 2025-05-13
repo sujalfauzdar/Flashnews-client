@@ -11,6 +11,7 @@ import AdminRoute from './components/AdminRoute';
 import AboutUs from './pages/AboutUs';
 import ContactUs from './pages/ContactUs';
 import Footer from './components/Footer';
+import VideoList from './pages/VideoList';
 
 const App = () => (
     <Router>
@@ -34,6 +35,14 @@ const App = () => (
                         <ArticleList />
                     </PrivateRoute>
                 }
+            />
+            <Route 
+            path="/videos"
+            element={
+                <PrivateRoute>
+                    <VideoList />
+                </PrivateRoute>
+            }
             />
             <Route
                 path="/articles/:id"

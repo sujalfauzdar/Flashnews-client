@@ -19,6 +19,13 @@ const ArticleDetail = () => {
         state: '',
         city: '',
     });
+    const [replyText, setReplyText] = useState({});
+    const [showReplyForm, setShowReplyForm] = useState({});
+    const [editCommentText, setEditCommentText] = useState({});
+    const [editReplyText, setEditReplyText] = useState({});
+    const [isEditingComment, setIsEditingComment] = useState({});
+    const [isEditingReply, setIsEditingReply] = useState({});
+    const [showReplies, setShowReplies] = useState({});
 
     useEffect(() => {
         const fetchArticleAndComments = async () => {
@@ -88,6 +95,134 @@ const ArticleDetail = () => {
         } catch (error) {
             console.error('Error deleting comment:', error);
             alert('Failed to delete comment: ' + (error.response?.data?.error || error.message));
+        }
+    };
+
+    const handleReplySubmit = async (commentId, e) => {
+        e.preventDefault();
+        const text = replyText[commentId];
+        if (!text?.trim()) return;
+
+        try {
+            const response = await axios.post(
+                `${import.meta.env.VITE_API_URL}/comments/${commentId}/reply`,
+                { text },
+                {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                        'Content-Type': 'application/json',
+                    },
+                }
+            );
+            setComments(comments.map(c => c._id === commentId ? response.data : c));
+            setReplyText({ ...replyText, [commentId]: '' });
+            setShowReplyForm({ ...showReplyForm, [commentId]: false });
+        } catch (error) {
+            console.error('Error posting reply:', error);
+            alert('Failed to post reply: ' + (error.response?.data?.error || error.message));
+        }
+    };
+
+    const handleLikeComment = async (commentId) => {
+        try {
+            const response = await axios.post(
+                `${import.meta.env.VITE_API_URL}/comments/${commentId}/like`,
+                {},
+                {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    },
+                }
+            );
+            setComments(comments.map(c => c._id === commentId ? response.data : c));
+        } catch (error) {
+            console.error('Error liking comment:', error);
+            alert('Failed to like comment: ' + (error.response?.data?.error || error.message));
+        }
+    };
+
+    const handleDislikeComment = async (commentId) => {
+        try {
+            const response = await axios.post(
+                `${import.meta.env.VITE_API_URL}/comments/${commentId}/dislike`,
+                {},
+                {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    },
+                }
+            );
+            setComments(comments.map(c => c._id === commentId ? response.data : c));
+        } catch (error) {
+            console.error('Error disliking comment:', error);
+            alert('Failed to dislike comment: ' + (error.response?.data?.error || error.message));
+        }
+    };
+
+    const handleEditComment = async (commentId, e) => {
+        e.preventDefault();
+        const text = editCommentText[commentId];
+        if (!text?.trim()) return;
+
+        try {
+            const response = await axios.put(
+                `${import.meta.env.VITE_API_URL}/comments/${commentId}`,
+                { text },
+                {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                        'Content-Type': 'application/json',
+                    },
+                }
+            );
+            setComments(comments.map(c => c._id === commentId ? response.data : c));
+            setIsEditingComment({ ...isEditingComment, [commentId]: false });
+        } catch (error) {
+            console.error('Error editing comment:', error);
+            alert('Failed to edit comment: ' + (error.response?.data?.error || error.message));
+        }
+    };
+
+    const handleEditReply = async (commentId, replyId, e) => {
+        e.preventDefault();
+        const text = editReplyText[replyId];
+        if (!text?.trim()) return;
+
+        try {
+            const response = await axios.put(
+                `${import.meta.env.VITE_API_URL}/comments/${commentId}/reply/${replyId}`,
+                { text },
+                {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                        'Content-Type': 'application/json',
+                    },
+                }
+            );
+            setComments(comments.map(c => c._id === commentId ? response.data : c));
+            setIsEditingReply({ ...isEditingReply, [replyId]: false });
+        } catch (error) {
+            console.error('Error editing reply:', error);
+            alert('Failed to edit reply: ' + (error.response?.data?.error || error.message));
+        }
+    };
+
+    const handleDeleteReply = async (commentId, replyId) => {
+        if (!window.confirm('Are you sure you want to delete this reply?')) return;
+
+        try {
+            const response = await axios.delete(
+                `${import.meta.env.VITE_API_URL}/comments/${commentId}/reply/${replyId}`,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    },
+                }
+            );
+            setComments(comments.map(c => c._id === commentId ? response.data : c));
+        } catch (error) {
+            console.error('Error deleting reply:', error);
+            alert('Failed to delete reply: ' + (error.response?.data?.error || error.message));
         }
     };
 
@@ -367,7 +502,6 @@ const ArticleDetail = () => {
                                 <p>{article.state}</p>
                             </motion.div>
 
-                            {/* Like/Dislike Section */}
                             <div className="mt-4 flex items-center gap-4">
                                 <div className="flex items-center">
                                     <button
@@ -379,10 +513,10 @@ const ArticleDetail = () => {
                                             xmlns="http://www.w3.org/2000/svg"
                                             className="w-6 h-6 text-blue-500"
                                             viewBox="0 0 24 24"
-                                            fill="currentColor">
+                                            fill="currentColor"
+                                        >
                                             <path d="M1 21h4V9H1v12zM23 10c0-.55-.45-1-1-1h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 2l-5 5V21h10c.55 0 1-.45 1-1v-6l1.29-1.29c.19-.18.29-.44.29-.71V10z" />
                                         </svg>
-
                                         <span>{article.likes.length}</span>
                                     </button>
                                 </div>
@@ -396,12 +530,11 @@ const ArticleDetail = () => {
                                             xmlns="http://www.w3.org/2000/svg"
                                             className="w-6 h-6 text-red-500"
                                             viewBox="0 0 24 24"
-                                            fill="currentColor">
-                                            <path d="M23 3h-4v12h4V3zM1 13c0 .55.45 1 1 1h6.31l-.95 4.57-.03.32c0 .41.17.79.44 1.06L9.83 22l5-5V3H4c-.55 0-1 .45-1 1v6l-1.29 1.29c-.19.18-.29.44-.29.71V13z" />
+                                            fill="currentColor"
+                                        >
+                                            <path d="M23 3h-4v12h4V3zM1 13c0 .55.45 1 1 1h6.31l-.95 4.57-.03.32c0 .41.17.79.44 1.06L9.83 22l5-5V3H4c-.55 0-1 .45-1 1v6l-1.29 1.29c-.19-.18-.29-.44-.29-.71V13z" />
                                         </svg>
-
                                         <span>{article.dislikes.length}</span>
-                                        
                                     </button>
                                 </div>
                                 {!isLoggedIn && (
@@ -459,47 +592,286 @@ const ArticleDetail = () => {
                             comments.map((comment) => (
                                 <motion.div
                                     key={comment._id}
-                                    className="p-4 flex justify-between items-start"
+                                    className="p-4 border-b border-gray-700"
                                     variants={commentVariants}
                                     initial="hidden"
                                     animate="visible"
                                     exit="exit"
                                 >
-                                    <div>
-                                        <p className="text-sm text-gray-400">
-                                            <span className="text-gray-400 font-medium">
-                                                @{comment.user.username}
-                                                {comment.user.role === 'Admin' && (
-                                                    <span className="ml-1 px-2 py-0.5 bg-[#0A1F44] text-[#FF4500] text-xs font-extrabold rounded-full">
-                                                        Admin
-                                                    </span>
-                                                )
-                                            }
-                                            </span>{' '}
-                                            • {new Date(comment.createdAt).toLocaleDateString()}
-                                        </p>
-                                        <p className="text-white mt-2">{comment.text}</p>
-                                    </div>
-                                    {comment.user.username === loggedInUsername && (
-                                        <button
-                                            onClick={() => handleDeleteComment(comment._id)}
-                                            className="text-[#FF4500] hover:text-[#00FFFF] transition-colors duration-300"
-                                        >
-                                            <svg
-                                                className="w-5 h-5"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                strokeWidth="2"
-                                                viewBox="0 0 24 24"
-                                                xmlns="http://www.w3.org/2000/svg"
+                                    <div className="flex justify-between items-start">
+                                        {isEditingComment[comment._id] ? (
+                                            <motion.form
+                                                onSubmit={(e) => handleEditComment(comment._id, e)}
+                                                className="w-full"
+                                                initial={{ opacity: 0 }}
+                                                animate={{ opacity: 1 }}
+                                                transition={{ duration: 0.3 }}
                                             >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    d="M4 7h16M10 11v6m4-6v6M3 7l1 14a2 2 0 002 2h12a2 2 0 002-2l1-14m-9-4h4a1 1 0 011 1v2H9V4a1 1 0 011-1h4"
+                                                <textarea
+                                                    value={editCommentText[comment._id] || comment.text}
+                                                    onChange={(e) => setEditCommentText({ ...editCommentText, [comment._id]: e.target.value })}
+                                                    className="w-full p-2 bg-[#121212] border border-[#374151] rounded text-[#FFFFFF] focus:border-[#00FFFF] focus:outline-none h-20 resize-none"
+                                                    required
                                                 />
-                                            </svg>
-                                        </button>
+                                                <div className="flex gap-2 mt-2">
+                                                    <button
+                                                        type="submit"
+                                                        className="bg-[#FF4500] text-white px-4 py-1 rounded hover:bg-[#00FFFF] hover:text-[#0A1F44] transition-all duration-300"
+                                                    >
+                                                        Save
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setIsEditingComment({ ...isEditingComment, [comment._id]: false })}
+                                                        className="bg-gray-600 text-white px-4 py-1 rounded hover:bg-gray-500 transition-all duration-300"
+                                                    >
+                                                        Cancel
+                                                    </button>
+                                                </div>
+                                            </motion.form>
+                                        ) : (
+                                            <div>
+                                                <p className="text-sm text-gray-400">
+                                                    <span className="text-gray-400 font-medium">
+                                                        @{comment.user.username}
+                                                        {comment.user.role === 'Admin' && (
+                                                            <span className="ml-1 px-2 py-0.5 bg-[#0A1F44] text-[#FF4500] text-xs font-extrabold rounded-full">
+                                                                Admin
+                                                            </span>
+                                                        )}
+                                                    </span>{' '}
+                                                    • {new Date(comment.createdAt).toLocaleDateString()}
+                                                </p>
+                                                <p className="text-white mt-2">{comment.text}</p>
+                                            </div>
+                                        )}
+                                        {comment.user.username === loggedInUsername && !isEditingComment[comment._id] && (
+                                            <div className="flex gap-2">
+                                                <button
+                                                    onClick={() => {
+                                                        setEditCommentText({ ...editCommentText, [comment._id]: comment.text });
+                                                        setIsEditingComment({ ...isEditingComment, [comment._id]: true });
+                                                    }}
+                                                    className="text-[#1E90FF] hover:text-[#00FFFF] transition-colors duration-300"
+                                                >
+                                                    <svg
+                                                        className="w-5 h-5"
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        viewBox="0 0 24 24"
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                    >
+                                                        <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            strokeWidth="2"
+                                                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                                                        />
+                                                    </svg>
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDeleteComment(comment._id)}
+                                                    className="text-[#FF4500] hover:text-[#00FFFF] transition-colors duration-300"
+                                                >
+                                                    <svg
+                                                        className="w-5 h-5"
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        strokeWidth="2"
+                                                        viewBox="0 0 24 24"
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                    >
+                                                        <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            d="M4 7h16M10 11v6m4-6v6M3 7l1 14a2 2 0 002 2h12a2 2 0 002-2l1-14m-9-4h4a1 1 0 011 1v2H9V4a1 1 0 011-1h4"
+                                                        />
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Like/Dislike/Reply Buttons */}
+                                    {!isEditingComment[comment._id] && (
+                                        <div className="mt-2 flex items-center gap-4">
+                                            <button
+                                                onClick={() => handleLikeComment(comment._id)}
+                                                disabled={!isLoggedIn}
+                                                className={`flex items-center gap-1 text-sm ${isLoggedIn ? 'hover:text-[#00FFFF]' : 'opacity-50 cursor-not-allowed'}`}
+                                            >
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    className="w-5 h-5 text-blue-500"
+                                                    viewBox="0 0 24 24"
+                                                    fill="currentColor"
+                                                >
+                                                    <path d="M1 21h4V9H1v12zM23 10c0-.55-.45-1-1-1h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 2l-5 5V21h10c.55 0 1-.45 1-1v-6l1.29-1.29c.19-.18.29-.44.29-.71V10z" />
+                                                </svg>
+                                                {comment.likes.length}
+                                            </button>
+                                            <button
+                                                onClick={() => handleDislikeComment(comment._id)}
+                                                disabled={!isLoggedIn}
+                                                className={`flex items-center gap-1 text-sm ${isLoggedIn ? 'hover:text-[#FF4500]' : 'opacity-50 cursor-not-allowed'}`}
+                                            >
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    className="w-5 h-5 text-red-500"
+                                                    viewBox="0 0 24 24"
+                                                    fill="currentColor"
+                                                >
+                                                    <path d="M23 3h-4v12h4V3zM1 13c0 .55.45 1 1 1h6.31l-.95 4.57-.03.32c0 .41.17.79.44 1.06L9.83 22l5-5V3H4c-.55 0-1 .45-1 1v6l-1.29 1.29c-.19-.18-.29-.44-.29-.71V13z" />
+                                                </svg>
+                                                {comment.dislikes.length}
+                                            </button>
+                                            <button
+                                                onClick={() => setShowReplyForm({ ...showReplyForm, [comment._id]: !showReplyForm[comment._id] })}
+                                                className="text-sm text-[#1E90FF] hover:text-[#00FFFF]"
+                                            >
+                                                Reply
+                                            </button>
+                                        </div>
+                                    )}
+
+                                    {/* Reply Form */}
+                                    {isLoggedIn && showReplyForm[comment._id] && !isEditingComment[comment._id] && (
+                                        <motion.form
+                                            onSubmit={(e) => handleReplySubmit(comment._id, e)}
+                                            className="mt-2"
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            transition={{ duration: 0.3 }}
+                                        >
+                                            <textarea
+                                                value={replyText[comment._id] || ''}
+                                                onChange={(e) => setReplyText({ ...replyText, [comment._id]: e.target.value })}
+                                                placeholder="Type your reply..."
+                                                className="w-full p-2 bg-[#121212] border border-[#374151] rounded text-[#FFFFFF] focus:border-[#00FFFF] focus:outline-none h-20 resize-none"
+                                                required
+                                            />
+                                            <button
+                                                type="submit"
+                                                className="mt-2 bg-[#FF4500] text-white px-4 py-1 rounded hover:bg-[#00FFFF] hover:text-[#0A1F44] transition-all duration-300"
+                                            >
+                                                Post Reply
+                                            </button>
+                                        </motion.form>
+                                    )}
+
+                                    {/* Replies Toggle */}
+                                    {comment.replies.length > 0 && !isEditingComment[comment._id] && (
+                                        <div className="mt-2">
+                                            <button
+                                                onClick={() => setShowReplies({ ...showReplies, [comment._id]: !showReplies[comment._id] })}
+                                                className="text-sm text-[#1E90FF] hover:text-[#00FFFF]"
+                                            >
+                                                {showReplies[comment._id] ? 'Hide Replies' : `View ${comment.replies.length} Replies`}
+                                            </button>
+                                        </div>
+                                    )}
+
+                                    {/* Replies Display */}
+                                    {showReplies[comment._id] && comment.replies.length > 0 && (
+                                        <div className="ml-6 mt-2 space-y-2">
+                                            <AnimatePresence>
+                                                {comment.replies.map((reply) => (
+                                                    <motion.div
+                                                        key={reply._id}
+                                                        className="text-sm"
+                                                        initial={{ opacity: 0 }}
+                                                        animate={{ opacity: 1 }}
+                                                        exit={{ opacity: 0 }}
+                                                        transition={{ duration: 0.3 }}
+                                                    >
+                                                        {isEditingReply[reply._id] ? (
+                                                            <motion.form
+                                                                onSubmit={(e) => handleEditReply(comment._id, reply._id, e)}
+                                                                className="w-full"
+                                                                initial={{ opacity: 0 }}
+                                                                animate={{ opacity: 1 }}
+                                                                transition={{ duration: 0.3 }}
+                                                            >
+                                                                <textarea
+                                                                    value={editReplyText[reply._id] || reply.text}
+                                                                    onChange={(e) => setEditReplyText({ ...editReplyText, [reply._id]: e.target.value })}
+                                                                    className="w-full p-2 bg-[#121212] border border-[#374151] rounded text-[#FFFFFF] focus:border-[#00FFFF] focus:outline-none h-20 resize-none"
+                                                                    required
+                                                                />
+                                                                <div className="flex gap-2 mt-2">
+                                                                    <button
+                                                                        type="submit"
+                                                                        className="bg-[#FF4500] text-white px-4 py-1 rounded hover:bg-[#00FFFF] hover:text-[#0A1F44] transition-all duration-300"
+                                                                    >
+                                                                        Save
+                                                                    </button>
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => setIsEditingReply({ ...isEditingReply, [reply._id]: false })}
+                                                                        className="bg-gray-600 text-white px-4 py-1 rounded hover:bg-gray-500 transition-all duration-300"
+                                                                    >
+                                                                        Cancel
+                                                                    </button>
+                                                                </div>
+                                                            </motion.form>
+                                                        ) : (
+                                                            <>
+                                                                <p className="text-gray-400">
+                                                                    <span className="font-medium">@{reply.user.username}</span>{' '}
+                                                                    • {new Date(reply.createdAt).toLocaleDateString()}
+                                                                </p>
+                                                                <p className="text-white">{reply.text}</p>
+                                                                {reply.user.username === loggedInUsername && (
+                                                                    <div className="flex gap-2 mt-1">
+                                                                        <button
+                                                                            onClick={() => {
+                                                                                setEditReplyText({ ...editReplyText, [reply._id]: reply.text });
+                                                                                setIsEditingReply({ ...isEditingReply, [reply._id]: true });
+                                                                            }}
+                                                                            className="text-[#1E90FF] hover:text-[#00FFFF] transition-colors duration-300"
+                                                                        >
+                                                                            <svg
+                                                                                className="w-4 h-4"
+                                                                                fill="none"
+                                                                                stroke="currentColor"
+                                                                                viewBox="0 0 24 24"
+                                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                            >
+                                                                                <path
+                                                                                    strokeLinecap="round"
+                                                                                    strokeLinejoin="round"
+                                                                                    strokeWidth="2"
+                                                                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                                                                                />
+                                                                            </svg>
+                                                                        </button>
+                                                                        <button
+                                                                            onClick={() => handleDeleteReply(comment._id, reply._id)}
+                                                                            className="text-[#FF4500] hover:text-[#00FFFF] transition-colors duration-300"
+                                                                        >
+                                                                            <svg
+                                                                                className="w-4 h-4"
+                                                                                fill="none"
+                                                                                stroke="currentColor"
+                                                                                strokeWidth="2"
+                                                                                viewBox="0 0 24 24"
+                                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                            >
+                                                                                <path
+                                                                                    strokeLinecap="round"
+                                                                                    strokeLinejoin="round"
+                                                                                    d="M4 7h16M10 11v6m4-6v6M3 7l1 14a2 2 0 002 2h12a2 2 0 002-2l1-14m-9-4h4a1 1 0 011 1v2H9V4a1 1 0 011-1h4"
+                                                                                />
+                                                                            </svg>
+                                                                        </button>
+                                                                    </div>
+                                                                )}
+                                                            </>
+                                                        )}
+                                                    </motion.div>
+                                                ))}
+                                            </AnimatePresence>
+                                        </div>
                                     )}
                                 </motion.div>
                             ))

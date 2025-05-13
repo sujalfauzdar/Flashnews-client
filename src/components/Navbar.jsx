@@ -1,13 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
 import { assets } from '../assets/assets.js';
 
 const Navbar = () => {
     const navigate = useNavigate();
-    const location = useLocation(); // To track current route
+    const location = useLocation();
     const [isOpen, setIsOpen] = useState(false);
     const token = localStorage.getItem('token');
+    const popupRef = useRef(null); // Ref to track the popup element
+
     let userDetails = { username: 'Guest', email: 'N/A', role: 'N/A' };
 
     if (token) {
@@ -34,11 +36,32 @@ const Navbar = () => {
         navigate('/');
     };
 
+    // Close popup when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (popupRef.current && !popupRef.current.contains(event.target)) {
+                setIsOpen(false);
+            }
+        };
+
+        if (isOpen) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+
+        // Cleanup event listener on unmount or when isOpen changes
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [isOpen]);
+
     return (
         <nav className="text-[#00C2FF] p-4 flex justify-between items-center shadow-md shadow-[#0A1F44]">
             {/* Left Side: User Icon */}
             <div className="relative flex items-center">
-                <button onClick={() => setIsOpen(!isOpen)} className="focus:outline-none bg-white rounded-full w-12 h-12 p-3">
+                <button
+                    onClick={() => setIsOpen(!isOpen)}
+                    className="focus:outline-none bg-white rounded-full w-12 h-12 p-3"
+                >
                     <svg
                         className="w-7 h-7 text-[#FF4500]"
                         fill="none"
@@ -55,7 +78,10 @@ const Navbar = () => {
                     </svg>
                 </button>
                 {isOpen && token && (
-                    <div className="absolute top-12 left-0 text-white bg-gray-950 rounded-md shadow-lg p-4 w-64 z-10">
+                    <div
+                        ref={popupRef} // Attach ref to the popup
+                        className="absolute top-12 left-0 text-white bg-gray-950 rounded-md shadow-lg p-4 w-64 z-10"
+                    >
                         <div className="flex flex-col space-y-2">
                             <p className="text-sm font-medium">
                                 Username: <span className="font-normal">{userDetails.username}</span>

@@ -185,8 +185,8 @@ const Signup = () => {
                             onChange={handleChange}
                             className="w-full p-2 pl-10 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         >
-                            <option value="Reader">Reader</option>
-                            <option value="Admin">Admin</option>
+                            <option className='text-black' value="Reader">Reader</option>
+                            <option className='text-black' value="Admin">Admin</option>
                         </select>
                     </div>
                     <button
